@@ -1,0 +1,5 @@
+eclipse.preferences.version=1
+org.jboss.tools.openshift.Connection=https\://richyclarke@api.starter-us-east-1.openshift.com
+org.jboss.tools.openshift.DeployProject=searchpoint-connect
+org.jboss.tools.openshift.Service=searchpoint-connect@searchpoint-connect
+org.jboss.tools.openshift.SourcePath=${workspace_loc\:/searchpoint-connect}
