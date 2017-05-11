@@ -31,6 +31,11 @@ function config($stateProvider, $urlRouterProvider, $ocLazyLoadProvider) {
             templateUrl: "views/minor.html",
             data: { pageTitle: 'Example view' }
         })
+         .state('index.login', {
+            url: "/login",
+            templateUrl: "views/login.html",
+            data: { pageTitle: 'Login' }
+        })
 }
 angular
     .module('inspinia')
