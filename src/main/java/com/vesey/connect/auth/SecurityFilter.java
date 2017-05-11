@@ -1,5 +1,7 @@
 package com.vesey.connect.auth;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 
 import javax.annotation.Priority;
@@ -10,27 +12,22 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 import com.vesey.connect.utils.KeyGenerator;
 
 import java.io.IOException;
 import java.security.Key;
+import java.security.Principal;
+
 import org.jboss.logging.Logger;
 
-/**
- * @author Antonio Goncalves
- *         http://www.antoniogoncalves.org
- *         --
- */
-@Provider
-@JWTTokenNeeded
-@Priority(Priorities.AUTHENTICATION)
-public class JWTTokenNeededFilter implements ContainerRequestFilter {
 
-    // ======================================
-    // =          Injection Points          =
-    // ======================================
+@Provider
+@Secured
+@Priority(Priorities.AUTHENTICATION)
+public class SecurityFilter implements ContainerRequestFilter {
 
     @Inject
     private Logger log;
@@ -38,20 +35,16 @@ public class JWTTokenNeededFilter implements ContainerRequestFilter {
     @Inject
     private KeyGenerator keyGenerator;
 
-    // ======================================
-    // =          Business methods          =
-    // ======================================
-
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
 
-        // Get the HTTP Authorization header from the request
+    	// Get the HTTP Authorization header from the request
         String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-        log.info("#### authorizationHeader : " + authorizationHeader);
+        log.info("filter: authorizationHeader : " + authorizationHeader);
 
         // Check if the HTTP Authorization header is present and formatted correctly
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            log.error("#### invalid authorizationHeader : " + authorizationHeader);
+            log.error("filter: invalid authorizationHeader : " + authorizationHeader);
             throw new NotAuthorizedException("Authorization header must be provided");
         }
 
@@ -62,12 +55,15 @@ public class JWTTokenNeededFilter implements ContainerRequestFilter {
 
             // Validate the token
             Key key = keyGenerator.generateKey();
-            Jwts.parser().setSigningKey(key).parseClaimsJws(token);
-            log.info("#### valid token : " + token);
+            Jws<Claims> claims = Jwts.parser().setSigningKey(key).parseClaimsJws(token);
+            log.info("filter: valid token : " + token);
 
         } catch (Exception e) {
-            log.error("#### invalid token : " + token);
+            log.error("filter: invalid token : " + token);
             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }
+        
+        
+        
     }
 }
